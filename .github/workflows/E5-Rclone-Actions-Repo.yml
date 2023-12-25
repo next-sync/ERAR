@@ -1,9 +1,8 @@
 name: E5-Rclone-Actions-Repo
-
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 22 1/2 * *
+    - cron: 55 23 * * *
 
 jobs:
   run-it:
@@ -14,46 +13,42 @@ jobs:
       - name: Checkout codes
         uses: actions/checkout@v2
 
-      - name: Install rclone #安装rclone
+      - name: Install rclone
         run: curl https://rclone.org/install.sh | sudo bash
 
-      - name: Unzip config #解压配置文件
+      - name: Unzip config
         run: |
          mkdir -p ~/.config/rclone/
          unzip -P ${{ secrets.PASSWD }} rclone.zip -d ~/.config/rclone/
      
-      - name: Run rclone #运行rclone
+      - name: Run rclone
         run: |
           
-          # 延迟函数
           delay()
           {
           random_time=$(($RANDOM % $1))
-          echo "等待 ${random_time} 分钟后开始签到"
+          echo "waiting for ${random_time} sign-in will start in minutes."
           for((i=1;i<=${random_time};i++));  
           do
-          echo "倒计时 $[${random_time}-$i] 分钟"
+          echo "countdown $[${random_time}-$i] minutes"
           sleep 1m
           done
           }
-          # 随机延迟0~30分钟后再进行操作,可自行设置时间
           delay 30
 
-          # 更改时区
-          sudo cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          sudo cp /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
           
-          # 列出文件(此处不展示)
           echo `date +"%Y-%m-%d %H:%M:%S"` begin > time.log
-          echo "列出文件(此处不展示)"
-          rclone lsf e5:/ > "lsf.log"
-          rclone mkdir e5:/E5-Rclone-Actions-Repo/
-          rclone move lsf.log e5:/E5-Rclone-Actions-Repo/
-          rclone delete e5:/E5-Rclone-Actions-Repo/lsf.log
-          rclone rmdir e5:/E5-Rclone-Actions-Repo/
-      - name: Zip config #打包配置文件
+          echo "List of files (not displayed here)."
+          rclone lsf OneDrive:/ > "lsf.log"
+          rclone mkdir OneDrive:/E5-Rclone-Actions-Repo/
+          rclone move lsf.log OneDrive:/E5-Rclone-Actions-Repo/
+          rclone delete OneDrive:/E5-Rclone-Actions-Repo/lsf.log
+          rclone rmdir OneDrive:/E5-Rclone-Actions-Repo/
+      - name: Zip config
         run: zip -P ${{ secrets.PASSWD }} rclone.zip -j ~/.config/rclone/rclone.conf
 
-      - name: Commit config #提交配置文件
+      - name: Commit config
         run: |
          git config --global user.email "nextsyncx@gmail.com"
          git config --global user.name "next-sync"
